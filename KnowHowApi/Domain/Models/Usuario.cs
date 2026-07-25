@@ -10,6 +10,8 @@ namespace KnowHowApi.Domain.Models
         public string Email { get; set; }
         public string SenhaHash { get; set; }
         public TipoUsuario TipoUsuario { get; set; }
+        public DateTime DataNascimento { get; set; }
+        public string? Cpf { get; set; }
 
         public Usuario()
         {
@@ -21,6 +23,8 @@ namespace KnowHowApi.Domain.Models
             Nome = usuarioDTO.Nome;
             Email = usuarioDTO.Email;
             TipoUsuario = usuarioDTO.TipoUsuario;
+            DataNascimento = usuarioDTO.DataNascimento;
+            Cpf = usuarioDTO.Cpf;
         }
     }
 }

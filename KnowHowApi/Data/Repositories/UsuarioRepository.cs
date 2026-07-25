@@ -17,6 +17,12 @@ namespace KnowHowApi.Data.Repositories
             .FirstOrDefaultAsync(c => c.Email == email);
         }
 
+        public async Task<Usuario?> GetUsuarioByCpf(string cpf)
+        {
+            return await _context.Usuarios
+            .FirstOrDefaultAsync(c => c.Cpf == cpf);
+        }
+
         public async Task<Usuario?> GetUsuarioById(int id)
         {
             return await _context.Usuarios

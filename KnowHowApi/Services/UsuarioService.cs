@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using KnowHowApi.Domain.Configurations;
 using KnowHowApi.Domain.DTOs;
+using KnowHowApi.Domain.Enum;
 using KnowHowApi.Domain.Interfaces;
 using KnowHowApi.Domain.Models;
 using KnowHowApi.Services.Interfaces;
@@ -28,6 +30,22 @@ namespace KnowHowApi.Services
             if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Senha))
                 throw new BadHttpRequestException("Informe nome, e-mail e senha");
 
+            if (request.DataNascimento == default || request.DataNascimento.Date >= DateTime.UtcNow.Date)
+                throw new BadHttpRequestException("Informe uma data de nascimento válida.");
+
+            string? cpf = null;
+            if (request.TipoUsuario == TipoUsuario.Professor)
+            {
+                if (string.IsNullOrEmpty(request.Cpf) || request.Cpf.Length != 11 || !request.Cpf.All(char.IsDigit))
+                    throw new BadHttpRequestException("Informe um CPF válido, contendo somente os 11 dígitos.");
+
+                cpf = request.Cpf;
+
+                var cpfExistente = await _usuarioRepository.GetUsuarioByCpf(cpf);
+                if (cpfExistente != null)
+                    throw new BadHttpRequestException("Já existe um usuário cadastrado com este CPF.");
+            }
+
             var existente = await _usuarioRepository.GetUsuarioByEmail(request.Email);
             if (existente != null)
                 throw new BadHttpRequestException("Já existe um usuário cadastrado com este e-mail.");
@@ -37,7 +55,9 @@ namespace KnowHowApi.Services
                 Nome = request.Nome,
                 Email = request.Email,
                 SenhaHash = _cryptography.Crypt(request.Senha),
-                TipoUsuario = request.TipoUsuario
+                TipoUsuario = request.TipoUsuario,
+                DataNascimento = request.DataNascimento,
+                Cpf = cpf
             };
 
             return await _usuarioRepository.CriarUsuario(usuario);
@@ -89,6 +109,8 @@ namespace KnowHowApi.Services
             usuario.Nome = userEditDto.Nome;
             usuario.Email = userEditDto.Email;
             usuario.TipoUsuario = userEditDto.TipoUsuario;
+            usuario.DataNascimento = userEditDto.DataNascimento;
+            usuario.Cpf = userEditDto.Cpf;
 
             return await _usuarioRepository.Update(usuario);
         }

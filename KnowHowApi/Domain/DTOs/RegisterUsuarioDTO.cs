@@ -8,5 +8,7 @@ namespace KnowHowApi.Domain.DTOs
         public string Email { get; set; }
         public string Senha { get; set; }
         public TipoUsuario TipoUsuario { get; set; }
+        public DateTime DataNascimento { get; set; }
+        public string? Cpf { get; set; }
     }
 }

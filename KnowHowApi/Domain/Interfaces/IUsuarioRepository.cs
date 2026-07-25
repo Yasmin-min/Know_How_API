@@ -7,6 +7,7 @@ namespace KnowHowApi.Domain.Interfaces
     {
         Task<Usuario> CriarUsuario(Usuario usuario);
         Task<Usuario?> GetUsuarioByEmail(string email);
+        Task<Usuario?> GetUsuarioByCpf(string cpf);
         Task<Usuario?> GetUsuarioById(int UsuarioId);
         Task<List<Usuario>> GetAllUsers();
         Task<Usuario> Update(Usuario userEdit); 
