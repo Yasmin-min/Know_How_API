@@ -15,6 +15,9 @@ namespace KnowHowApi.Data.Maps
             builder.HasIndex(u => u.Email).IsUnique();
             builder.Property(u => u.SenhaHash).IsRequired();
             builder.Property(u => u.TipoUsuario).HasConversion<int>();
+            builder.Property(u => u.DataNascimento).HasColumnType("date").IsRequired();
+            builder.Property(u => u.Cpf).HasMaxLength(11);
+            builder.HasIndex(u => u.Cpf).IsUnique().HasFilter("[Cpf] IS NOT NULL");
         }
     }
 }

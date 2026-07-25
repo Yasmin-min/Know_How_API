@@ -9,6 +9,8 @@ namespace KnowHowApi.Domain.DTOs
         public string Nome { get; set; }
         public string Email { get; set; }
         public TipoUsuario TipoUsuario { get; set; }
+        public DateTime DataNascimento { get; set; }
+        public string? Cpf { get; set; }
 
         public UsuarioDTO()
         {
@@ -20,6 +22,8 @@ namespace KnowHowApi.Domain.DTOs
             Nome = usuario.Nome;
             Email = usuario.Email;
             TipoUsuario = usuario.TipoUsuario;
+            DataNascimento = usuario.DataNascimento;
+            Cpf = usuario.Cpf;
         }
     }
 }
