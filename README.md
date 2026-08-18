@@ -51,17 +51,25 @@ funcionam. Os domínios de **Perfil de Professor**, **Busca/Filtro**, **Chat/Con
 
 ## Banco de dados
 
-O projeto usa **PostgreSQL** via Entity Framework Core. Para rodar localmente, a forma mais
-simples é subir um Postgres via Docker (não precisa instalar nada no sistema):
+O projeto usa **PostgreSQL** via Entity Framework Core. Para rodar localmente (Windows),
+instale o PostgreSQL 17 com o winget:
 
+```powershell
+winget install --id PostgreSQL.PostgreSQL.17 -e --source winget --override "--mode unattended --unattendedmodeui minimal --superpassword postgres --serverport 5432 --disable-components stackbuilder"
+```
+
+Isso instala o Postgres como serviço do Windows (inicia sozinho com a máquina) já com o
+usuário `postgres`/senha `postgres` na porta `5432` — igual à connection string padrão de
+`KnowHowApi/appsettings.json`
+(`Host=localhost;Port=5432;Database=knowhowdb;Username=postgres;Password=postgres`).
+
+Se preferir Docker em vez de instalar localmente:
 ```powershell
 docker run --name knowhow-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=knowhowdb -p 5432:5432 -d postgres:16
 ```
 
-Isso sobe um Postgres já compatível com a connection string padrão de
-`KnowHowApi/appsettings.json` (`Host=localhost;Port=5432;Database=knowhowdb;Username=postgres;Password=postgres`).
-Se preferir outra instância (nativa, outro container, etc.), só garanta que a connection
-string bate com o seu ambiente.
+Qualquer que seja a opção escolhida, só garanta que a connection string bate com o seu
+ambiente.
 
 ### Aplicar as migrations
 
