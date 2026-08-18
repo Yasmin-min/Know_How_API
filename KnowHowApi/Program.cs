@@ -52,7 +52,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<Context>(options =>
 {
-    options.UseSqlServer(
+    options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     );
     options.LogTo(Console.WriteLine);
@@ -91,6 +91,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    app.Urls.Add($"http://0.0.0.0:{port}");
+}
 
 if (app.Environment.IsDevelopment())
 {

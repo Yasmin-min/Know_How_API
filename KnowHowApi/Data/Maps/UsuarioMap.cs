@@ -17,7 +17,7 @@ namespace KnowHowApi.Data.Maps
             builder.Property(u => u.TipoUsuario).HasConversion<int>();
             builder.Property(u => u.DataNascimento).HasColumnType("date").IsRequired();
             builder.Property(u => u.Cpf).HasMaxLength(11);
-            builder.HasIndex(u => u.Cpf).IsUnique().HasFilter("[Cpf] IS NOT NULL");
+            builder.HasIndex(u => u.Cpf).IsUnique().HasFilter("\"Cpf\" IS NOT NULL");
 
             builder.HasOne(u => u.AreaInteresse)
                 .WithMany()
