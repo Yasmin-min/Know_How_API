@@ -43,6 +43,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IAreaInteresseRepository, AreaInteresseRepository>();
 builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();
 builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
