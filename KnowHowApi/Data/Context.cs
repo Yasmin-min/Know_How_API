@@ -16,11 +16,13 @@ namespace KnowHowApi.Data
 
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<PerfilProfessor> PerfilProfessores { get; set; }
+        public DbSet<AreaInteresse> AreasInteresse { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new UsuarioMap());
             modelBuilder.ApplyConfiguration(new PerfilProfessorMap());
+            modelBuilder.ApplyConfiguration(new AreaInteresseMap());
             base.OnModelCreating(modelBuilder);
 
             var utcConverter = new ValueConverter<DateTime, DateTime>(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));

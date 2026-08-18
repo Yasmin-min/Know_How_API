@@ -12,6 +12,8 @@ namespace KnowHowApi.Domain.Models
         public TipoUsuario TipoUsuario { get; set; }
         public DateTime DataNascimento { get; set; }
         public string? Cpf { get; set; }
+        public int? AreaInteresseId { get; set; }
+        public AreaInteresse? AreaInteresse { get; set; }
 
         public Usuario()
         {
