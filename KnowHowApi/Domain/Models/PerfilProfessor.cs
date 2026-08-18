@@ -12,5 +12,10 @@ namespace KnowHowApi.Domain.Models
         public string Descricao { get; set; }
         public bool Disponivel { get; set; }
         public string AvatarVariante { get; set; }
+        public int? AreaEspecialidadeId { get; set; }
+        public AreaInteresse? AreaEspecialidade { get; set; }
+        public string? AnosExperiencia { get; set; }
+        public byte[]? FotoPerfil { get; set; }
+        public string? FotoPerfilContentType { get; set; }
     }
 }
