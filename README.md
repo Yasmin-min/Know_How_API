@@ -16,7 +16,7 @@ Plataforma web (PWA) para contratação e agendamento de aulas on-line, conectan
 ## Tecnologias
 
 - Linguagem: C# / ASP.NET Core 9
-- Banco de dados: SQL Server (Entity Framework Core)
+- Banco de dados: PostgreSQL (Entity Framework Core)
 - Autenticação: JWT (login por e-mail/senha)
 - Comunicação em tempo real: SignalR (chat professor-aluno)
 - Arquitetura: DDD em camadas (Controllers → Services → Repositories → Data)
@@ -51,55 +51,33 @@ funcionam. Os domínios de **Perfil de Professor**, **Busca/Filtro**, **Chat/Con
 
 ## Banco de dados
 
-O projeto usa **SQL Server** via Entity Framework Core. Para rodar localmente (Windows),
-cada dev precisa ter uma instância do **SQL Server 2022 Developer Edition** — é gratuita,
-sem limite de tamanho, licenciada para uso em desenvolvimento/teste.
-
-### 1. Instalar o SQL Server
-
-Abra o **PowerShell como Administrador** (clique direito no ícone > "Executar como
-administrador" — não use o terminal integrado do VS Code, ele pode não ter permissão de
-elevação) e rode:
+O projeto usa **PostgreSQL** via Entity Framework Core. Para rodar localmente, a forma mais
+simples é subir um Postgres via Docker (não precisa instalar nada no sistema):
 
 ```powershell
-.\scripts\install-sqlserver-dev.ps1
+docker run --name knowhow-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=knowhowdb -p 5432:5432 -d postgres:16
 ```
 
-O script baixa e instala o SQL Server Developer Edition com:
-- Autenticação em modo misto habilitada (usuário `sa`)
-- Senha do `sa` já igual à que está em `KnowHowApi/appsettings.json` (`@Senha123@`)
-- TCP/IP habilitado na porta padrão (1433)
+Isso sobe um Postgres já compatível com a connection string padrão de
+`KnowHowApi/appsettings.json` (`Host=localhost;Port=5432;Database=knowhowdb;Username=postgres;Password=postgres`).
+Se preferir outra instância (nativa, outro container, etc.), só garanta que a connection
+string bate com o seu ambiente.
 
-Demora de 10 a 15 minutos. No final deve aparecer `Concluído!` no console.
+### Aplicar as migrations
 
-Se preferir instalar manualmente (ex: já tem SQL Server/Docker configurado de outro jeito),
-só garanta que a connection string em `appsettings.json` bate com o seu ambiente.
-
-### 2. Criar o banco e aplicar as migrations
-
-Com o SQL Server rodando, na raiz do projeto:
+Com o Postgres rodando, na raiz do projeto:
 
 ```powershell
 dotnet ef database update --project KnowHowApi
 ```
 
-Isso cria o banco `KnowHowDb` e aplica as migrations já existentes (não precisa gerar
-migration nova — ela já está versionada em `KnowHowApi/Migrations/`).
+Isso cria o schema e já popula as áreas de interesse padrão (não precisa gerar migration
+nova — ela já está versionada em `KnowHowApi/Migrations/`).
 
 Se o comando `dotnet ef` não existir, instale a ferramenta global antes:
 ```powershell
 dotnet tool install --global dotnet-ef
 ```
-
-### Problemas comuns
-
-- **Erro de conexão / "server not found"**: confirme que o serviço está rodando:
-  `Get-Service MSSQLSERVER` deve mostrar `Running`. Se não existir, a instalação não
-  terminou — rode o script de novo.
-- **Erro ao extrair mídia / `MediaType` inválido**: só ocorre se você editar o script; o
-  valor correto é `CAB` (não `Core`).
-- Sempre feche e reabra o PowerShell **como administrador** antes de rodar o script — sem
-  elevação, a instalação falha silenciosamente sem gerar log de erro.
 
 ## Como rodar
 
@@ -114,3 +92,22 @@ dotnet tool install --global dotnet-ef
    ```
 4. Acesse `http://localhost:5046/swagger` para explorar e testar os endpoints (Swagger UI
    só fica habilitado em ambiente de desenvolvimento).
+
+## Deploy (free tier, sem cartão de crédito)
+
+- **Banco**: [Neon](https://neon.tech) — Postgres free, sem expiração. Copie a connection
+  string do painel e converta para o formato Npgsql, ex.:
+  `Host=<host>;Port=5432;Database=<db>;Username=<user>;Password=<senha>;Ssl Mode=Require`.
+- **API**: [Render](https://render.com) — Web Service free, builda a partir do `Dockerfile`
+  na raiz do repo. Configure como variáveis de ambiente do serviço (nunca no
+  `appsettings.json` commitado):
+  - `ConnectionStrings__DefaultConnection` — a connection string do Neon
+  - `Jwt__SecretKey`, `Jwt__Issuer`, `Jwt__Audience`
+  - `ASPNETCORE_ENVIRONMENT=Production`
+
+  O Render injeta a porta a ser usada via variável `PORT`; o `Program.cs` já lê essa
+  variável e escuta nela quando presente (sem afetar o `dotnet run` local, que continua
+  usando `launchSettings.json`).
+- Depois do primeiro deploy, rode `dotnet ef database update --project KnowHowApi` uma vez
+  a partir da sua máquina apontando para a connection string do Neon, para criar o schema
+  no banco de produção.

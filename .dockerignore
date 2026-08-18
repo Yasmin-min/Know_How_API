@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+KnowHowApi.Tests/
+.git/
+.gitignore
+README.md
+scripts/
