@@ -5,5 +5,6 @@ namespace KnowHowApi.Domain.Interfaces
     public interface IProfessorRepository
     {
         Task<List<PerfilProfessor>> ListarProfessores();
+        Task<PerfilProfessor> CriarPerfilProfessor(PerfilProfessor perfil);
     }
 };

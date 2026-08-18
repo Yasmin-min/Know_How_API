@@ -15,12 +15,16 @@ namespace KnowHowApi.Services
     public class UsuarioService : IUsuarioService
     {
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IAreaInteresseRepository _areaInteresseRepository;
+        private readonly IProfessorRepository _professorRepository;
         private readonly ICryptography _cryptography;
         private readonly JWTSettings _jwtSettings;
 
-        public UsuarioService(IUsuarioRepository usuarioRepository, ICryptography cryptography, JWTSettings jwtSettings)
+        public UsuarioService(IUsuarioRepository usuarioRepository, IAreaInteresseRepository areaInteresseRepository, IProfessorRepository professorRepository, ICryptography cryptography, JWTSettings jwtSettings)
         {
             _usuarioRepository = usuarioRepository;
+            _areaInteresseRepository = areaInteresseRepository;
+            _professorRepository = professorRepository;
             _cryptography = cryptography;
             _jwtSettings = jwtSettings;
         }
@@ -34,6 +38,9 @@ namespace KnowHowApi.Services
                 throw new BadHttpRequestException("Informe uma data de nascimento válida.");
 
             string? cpf = null;
+            AreaInteresse? areaEspecialidade = null;
+            byte[]? fotoPerfil = null;
+            string? fotoPerfilContentType = null;
             if (request.TipoUsuario == TipoUsuario.Professor)
             {
                 if (string.IsNullOrEmpty(request.Cpf) || request.Cpf.Length != 11 || !request.Cpf.All(char.IsDigit))
@@ -44,6 +51,35 @@ namespace KnowHowApi.Services
                 var cpfExistente = await _usuarioRepository.GetUsuarioByCpf(cpf);
                 if (cpfExistente != null)
                     throw new BadHttpRequestException("Já existe um usuário cadastrado com este CPF.");
+
+                if (string.IsNullOrWhiteSpace(request.AreaEspecialidade))
+                    throw new BadHttpRequestException("Informe a área de especialidade.");
+
+                areaEspecialidade = await _areaInteresseRepository.GetAreaInteresseByNome(request.AreaEspecialidade);
+                if (areaEspecialidade == null)
+                    throw new BadHttpRequestException("Área de especialidade inválida.");
+
+                if (string.IsNullOrWhiteSpace(request.AnosExperiencia))
+                    throw new BadHttpRequestException("Informe os anos de experiência.");
+
+                if (string.IsNullOrWhiteSpace(request.MiniBiografia))
+                    throw new BadHttpRequestException("Informe a mini biografia.");
+
+                if (!string.IsNullOrEmpty(request.FotoPerfilBase64))
+                    (fotoPerfil, fotoPerfilContentType) = ParseFotoPerfil(request.FotoPerfilBase64);
+            }
+
+            int? areaInteresseId = null;
+            if (request.TipoUsuario == TipoUsuario.Aluno)
+            {
+                if (string.IsNullOrWhiteSpace(request.AreaInteresse))
+                    throw new BadHttpRequestException("Informe a área de interesse.");
+
+                var areaInteresse = await _areaInteresseRepository.GetAreaInteresseByNome(request.AreaInteresse);
+                if (areaInteresse == null)
+                    throw new BadHttpRequestException("Área de interesse inválida.");
+
+                areaInteresseId = areaInteresse.Id;
             }
 
             var existente = await _usuarioRepository.GetUsuarioByEmail(request.Email);
@@ -57,10 +93,61 @@ namespace KnowHowApi.Services
                 SenhaHash = _cryptography.Crypt(request.Senha),
                 TipoUsuario = request.TipoUsuario,
                 DataNascimento = request.DataNascimento,
-                Cpf = cpf
+                Cpf = cpf,
+                AreaInteresseId = areaInteresseId
             };
 
-            return await _usuarioRepository.CriarUsuario(usuario);
+            usuario = await _usuarioRepository.CriarUsuario(usuario);
+
+            if (request.TipoUsuario == TipoUsuario.Professor)
+            {
+                var perfil = new PerfilProfessor
+                {
+                    UsuarioId = usuario.Id,
+                    Materia = areaEspecialidade!.Nome,
+                    AreaEspecialidadeId = areaEspecialidade.Id,
+                    AnosExperiencia = request.AnosExperiencia,
+                    Descricao = request.MiniBiografia!,
+                    FotoPerfil = fotoPerfil,
+                    FotoPerfilContentType = fotoPerfilContentType,
+                    ValorHora = 0,
+                    Avaliacao = 0,
+                    TotalAvaliacoes = 0,
+                    Disponivel = false,
+                    AvatarVariante = string.Empty
+                };
+
+                await _professorRepository.CriarPerfilProfessor(perfil);
+            }
+
+            return usuario;
+        }
+
+        private static (byte[] bytes, string? contentType) ParseFotoPerfil(string fotoPerfilBase64)
+        {
+            string? contentType = null;
+            var base64 = fotoPerfilBase64;
+
+            if (fotoPerfilBase64.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                var separatorIndex = fotoPerfilBase64.IndexOf(',');
+                if (separatorIndex < 0)
+                    throw new BadHttpRequestException("Foto de perfil inválida.");
+
+                var header = fotoPerfilBase64[5..separatorIndex];
+                var contentTypeEnd = header.IndexOf(';');
+                contentType = contentTypeEnd >= 0 ? header[..contentTypeEnd] : header;
+                base64 = fotoPerfilBase64[(separatorIndex + 1)..];
+            }
+
+            try
+            {
+                return (Convert.FromBase64String(base64), contentType);
+            }
+            catch (FormatException)
+            {
+                throw new BadHttpRequestException("Foto de perfil inválida.");
+            }
         }
 
         public async Task<LoginResponseDTO> ValidateLogin(LoginRequestDTO request)

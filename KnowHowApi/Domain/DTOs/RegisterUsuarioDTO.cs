@@ -10,5 +10,10 @@ namespace KnowHowApi.Domain.DTOs
         public TipoUsuario TipoUsuario { get; set; }
         public DateTime DataNascimento { get; set; }
         public string? Cpf { get; set; }
+        public string? AreaInteresse { get; set; }
+        public string? AreaEspecialidade { get; set; }
+        public string? AnosExperiencia { get; set; }
+        public string? MiniBiografia { get; set; }
+        public string? FotoPerfilBase64 { get; set; }
     }
 }

@@ -13,12 +13,18 @@ namespace KnowHowApi.Tests.Services
     public class UsuarioServiceTests
     {
         private readonly Mock<IUsuarioRepository> _usuarioRepositoryMock = new();
+        private readonly Mock<IAreaInteresseRepository> _areaInteresseRepositoryMock = new();
+        private readonly Mock<IProfessorRepository> _professorRepositoryMock = new();
         private readonly Mock<ICryptography> _cryptographyMock = new();
         private readonly UsuarioService _service;
 
         public UsuarioServiceTests()
         {
             _cryptographyMock.Setup(c => c.Crypt(It.IsAny<string>())).Returns("hash-fake");
+            _areaInteresseRepositoryMock.Setup(r => r.GetAreaInteresseByNome("Tecnologia e Programação"))
+                .ReturnsAsync(new AreaInteresse { Id = 1, Nome = "Tecnologia e Programação" });
+            _professorRepositoryMock.Setup(r => r.CriarPerfilProfessor(It.IsAny<PerfilProfessor>()))
+                .ReturnsAsync((PerfilProfessor p) => p);
 
             var jwtSettings = new JWTSettings
             {
@@ -27,7 +33,7 @@ namespace KnowHowApi.Tests.Services
                 SecretKey = "chave-secreta-de-teste-com-tamanho-suficiente"
             };
 
-            _service = new UsuarioService(_usuarioRepositoryMock.Object, _cryptographyMock.Object, jwtSettings);
+            _service = new UsuarioService(_usuarioRepositoryMock.Object, _areaInteresseRepositoryMock.Object, _professorRepositoryMock.Object, _cryptographyMock.Object, jwtSettings);
         }
 
         private static RegisterUsuarioDTO NovoAlunoValido() => new()
@@ -36,7 +42,8 @@ namespace KnowHowApi.Tests.Services
             Email = "aluno.teste@knowhow.com",
             Senha = "Senha@123",
             TipoUsuario = TipoUsuario.Aluno,
-            DataNascimento = new DateTime(2003, 5, 14)
+            DataNascimento = new DateTime(2003, 5, 14),
+            AreaInteresse = "Tecnologia e Programação"
         };
 
         private static RegisterUsuarioDTO NovoProfessorValido() => new()
@@ -46,7 +53,10 @@ namespace KnowHowApi.Tests.Services
             Senha = "Senha@123",
             TipoUsuario = TipoUsuario.Professor,
             DataNascimento = new DateTime(1988, 11, 2),
-            Cpf = "71428793860"
+            Cpf = "71428793860",
+            AreaEspecialidade = "Tecnologia e Programação",
+            AnosExperiencia = "3 a 5 anos",
+            MiniBiografia = "Professor com experiência em desenvolvimento de software e ensino."
         };
 
         [Fact]
@@ -66,6 +76,28 @@ namespace KnowHowApi.Tests.Services
         }
 
         [Fact]
+        public async Task Registrar_AlunoSemAreaInteresse_LancaBadRequest()
+        {
+            var request = NovoAlunoValido();
+            request.AreaInteresse = null;
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Registrar_AlunoComAreaInteresseInvalida_LancaBadRequest()
+        {
+            var request = NovoAlunoValido();
+            request.AreaInteresse = "Área Inexistente";
+            _areaInteresseRepositoryMock.Setup(r => r.GetAreaInteresseByNome(request.AreaInteresse))
+                .ReturnsAsync((AreaInteresse?)null);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
         public async Task Registrar_ProfessorComCpfValido_PersisteComCpf()
         {
             var request = NovoProfessorValido();
@@ -78,6 +110,84 @@ namespace KnowHowApi.Tests.Services
             Assert.Equal(request.Cpf, usuario.Cpf);
             Assert.Equal(request.DataNascimento, usuario.DataNascimento);
             _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Once);
+            _professorRepositoryMock.Verify(r => r.CriarPerfilProfessor(It.Is<PerfilProfessor>(p =>
+                p.Materia == request.AreaEspecialidade &&
+                p.AreaEspecialidadeId == 1 &&
+                p.AnosExperiencia == request.AnosExperiencia &&
+                p.Descricao == request.MiniBiografia)), Times.Once);
+        }
+
+        [Fact]
+        public async Task Registrar_ProfessorSemAreaEspecialidade_LancaBadRequest()
+        {
+            var request = NovoProfessorValido();
+            request.AreaEspecialidade = null;
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByCpf(request.Cpf!)).ReturnsAsync((Usuario?)null);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Registrar_ProfessorComAreaEspecialidadeInvalida_LancaBadRequest()
+        {
+            var request = NovoProfessorValido();
+            request.AreaEspecialidade = "Área Inexistente";
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByCpf(request.Cpf!)).ReturnsAsync((Usuario?)null);
+            _areaInteresseRepositoryMock.Setup(r => r.GetAreaInteresseByNome(request.AreaEspecialidade))
+                .ReturnsAsync((AreaInteresse?)null);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Registrar_ProfessorSemAnosExperiencia_LancaBadRequest()
+        {
+            var request = NovoProfessorValido();
+            request.AnosExperiencia = null;
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByCpf(request.Cpf!)).ReturnsAsync((Usuario?)null);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Registrar_ProfessorSemMiniBiografia_LancaBadRequest()
+        {
+            var request = NovoProfessorValido();
+            request.MiniBiografia = null;
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByCpf(request.Cpf!)).ReturnsAsync((Usuario?)null);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Registrar_ProfessorComFotoPerfilDataUrlValida_PersisteBytesEContentType()
+        {
+            var request = NovoProfessorValido();
+            request.FotoPerfilBase64 = "data:image/png;base64,iVBORw0KGgo=";
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByEmail(request.Email)).ReturnsAsync((Usuario?)null);
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByCpf(request.Cpf!)).ReturnsAsync((Usuario?)null);
+            _usuarioRepositoryMock.Setup(r => r.CriarUsuario(It.IsAny<Usuario>())).ReturnsAsync((Usuario u) => u);
+
+            await _service.Registrar(request);
+
+            _professorRepositoryMock.Verify(r => r.CriarPerfilProfessor(It.Is<PerfilProfessor>(p =>
+                p.FotoPerfilContentType == "image/png" &&
+                p.FotoPerfil != null && p.FotoPerfil.Length > 0)), Times.Once);
+        }
+
+        [Fact]
+        public async Task Registrar_ProfessorComFotoPerfilInvalida_LancaBadRequest()
+        {
+            var request = NovoProfessorValido();
+            request.FotoPerfilBase64 = "data:image/png;base64,isso-nao-e-base64!!!";
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioByCpf(request.Cpf!)).ReturnsAsync((Usuario?)null);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.Registrar(request));
+            _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
         }
 
         [Fact]

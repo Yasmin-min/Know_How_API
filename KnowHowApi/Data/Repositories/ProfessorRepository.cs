@@ -18,5 +18,12 @@ namespace KnowHowApi.Data.Repositories
                 .Where(p => p.Usuario.TipoUsuario == TipoUsuario.Professor)
                 .ToListAsync();
         }
+
+        public async Task<PerfilProfessor> CriarPerfilProfessor(PerfilProfessor perfil)
+        {
+            _context.PerfilProfessores.Add(perfil);
+            await _context.SaveChangesAsync();
+            return perfil;
+        }
     }
 };
