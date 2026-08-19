@@ -6,5 +6,6 @@ namespace KnowHowApi.Domain.Interfaces
     {
         Task<List<PerfilProfessor>> ListarProfessores();
         Task<PerfilProfessor> CriarPerfilProfessor(PerfilProfessor perfil);
+        Task<PerfilProfessor?> GetPerfilProfessorByUsuarioId(int usuarioId);
     }
 };

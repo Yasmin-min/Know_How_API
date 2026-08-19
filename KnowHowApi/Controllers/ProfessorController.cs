@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using KnowHowApi.Domain.DTOs;
 using KnowHowApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,5 +23,23 @@ public class ProfessorController : Controller
     public async Task<IActionResult> Listar()
     {
         return Ok(await _professorService.ListarProfessores());
+    }
+
+    [Authorize(Roles = "Professor")]
+    [HttpGet]
+    [Route("dashboard")]
+    [ProducesResponseType(typeof(ProfessorDashboardResponseDTO), 200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Dashboard()
+    {
+        var usuarioIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(usuarioIdClaim, out var usuarioId))
+            return Unauthorized();
+
+        var dashboard = await _professorService.ObterDashboard(usuarioId);
+        if (dashboard == null)
+            return NotFound(new { mensagem = "Perfil de professor não encontrado para o usuário autenticado." });
+
+        return Ok(dashboard);
     }
 }
