@@ -170,6 +170,23 @@ namespace KnowHowApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("RecuperacaoSenhaCodigoExpiraEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RecuperacaoSenhaCodigoHash")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RecuperacaoSenhaTentativas")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("RecuperacaoSenhaTokenExpiraEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RecuperacaoSenhaTokenHash")
+                        .HasColumnType("text");
+
                     b.Property<string>("SenhaHash")
                         .IsRequired()
                         .HasColumnType("text");

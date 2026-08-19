@@ -47,6 +47,7 @@ builder.Services.AddScoped<IAreaInteresseRepository, AreaInteresseRepository>();
 builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();
 builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSignalR();
 
@@ -61,6 +62,10 @@ builder.Services.AddDbContext<Context>(options =>
 var jwtSettings = new JWTSettings();
 new ConfigureFromConfigurationOptions<JWTSettings>(builder.Configuration.GetSection("Jwt")).Configure(jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
+
+var smtpSettings = new SmtpSettings();
+new ConfigureFromConfigurationOptions<SmtpSettings>(builder.Configuration.GetSection("Smtp")).Configure(smtpSettings);
+builder.Services.AddSingleton(smtpSettings);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

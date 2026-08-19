@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using KnowHowApi.Domain.Configurations;
 using KnowHowApi.Domain.DTOs;
@@ -14,18 +15,26 @@ namespace KnowHowApi.Services
 {
     public class UsuarioService : IUsuarioService
     {
+        private const int TamanhoCodigoRecuperacao = 6;
+        private const int MaxTentativasCodigoRecuperacao = 5;
+        private const int SenhaMinima = 6;
+        private static readonly TimeSpan CodigoRecuperacaoExpiracao = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan TokenRedefinicaoExpiracao = TimeSpan.FromMinutes(10);
+
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IAreaInteresseRepository _areaInteresseRepository;
         private readonly IProfessorRepository _professorRepository;
         private readonly ICryptography _cryptography;
+        private readonly IEmailService _emailService;
         private readonly JWTSettings _jwtSettings;
 
-        public UsuarioService(IUsuarioRepository usuarioRepository, IAreaInteresseRepository areaInteresseRepository, IProfessorRepository professorRepository, ICryptography cryptography, JWTSettings jwtSettings)
+        public UsuarioService(IUsuarioRepository usuarioRepository, IAreaInteresseRepository areaInteresseRepository, IProfessorRepository professorRepository, ICryptography cryptography, IEmailService emailService, JWTSettings jwtSettings)
         {
             _usuarioRepository = usuarioRepository;
             _areaInteresseRepository = areaInteresseRepository;
             _professorRepository = professorRepository;
             _cryptography = cryptography;
+            _emailService = emailService;
             _jwtSettings = jwtSettings;
         }
 
@@ -200,6 +209,117 @@ namespace KnowHowApi.Services
             usuario.Cpf = userEditDto.Cpf;
 
             return await _usuarioRepository.Update(usuario);
+        }
+
+        public async Task SolicitarRecuperacaoSenha(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new BadHttpRequestException("Informe o e-mail.");
+
+            var usuario = await _usuarioRepository.GetUsuarioByEmail(email);
+            if (usuario == null)
+                return;
+
+            var codigo = GerarCodigoRecuperacao();
+
+            usuario.RecuperacaoSenhaCodigoHash = _cryptography.Crypt(codigo);
+            usuario.RecuperacaoSenhaCodigoExpiraEm = DateTime.UtcNow.Add(CodigoRecuperacaoExpiracao);
+            usuario.RecuperacaoSenhaTentativas = 0;
+            usuario.RecuperacaoSenhaTokenHash = null;
+            usuario.RecuperacaoSenhaTokenExpiraEm = null;
+
+            await _usuarioRepository.Update(usuario);
+
+            await _emailService.EnviarEmailAsync(
+                usuario.Email,
+                "Recuperação de senha - Know How",
+                $"Seu código de verificação é: {codigo}. Ele expira em {(int)CodigoRecuperacaoExpiracao.TotalMinutes} minutos.");
+        }
+
+        public async Task<string> ConfirmarCodigoRecuperacao(string email, string codigo)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(codigo))
+                throw new BadHttpRequestException("Informe o e-mail e o código.");
+
+            var usuario = await _usuarioRepository.GetUsuarioByEmail(email);
+            if (usuario == null || usuario.RecuperacaoSenhaCodigoHash == null || usuario.RecuperacaoSenhaCodigoExpiraEm == null)
+                throw new BadHttpRequestException("Código inválido ou expirado.");
+
+            if (usuario.RecuperacaoSenhaCodigoExpiraEm < DateTime.UtcNow)
+            {
+                LimparRecuperacaoSenha(usuario);
+                await _usuarioRepository.Update(usuario);
+                throw new BadHttpRequestException("Código inválido ou expirado.");
+            }
+
+            if (usuario.RecuperacaoSenhaTentativas >= MaxTentativasCodigoRecuperacao)
+            {
+                LimparRecuperacaoSenha(usuario);
+                await _usuarioRepository.Update(usuario);
+                throw new BadHttpRequestException("Número máximo de tentativas excedido. Solicite um novo código.");
+            }
+
+            if (!_cryptography.Verify(codigo, usuario.RecuperacaoSenhaCodigoHash))
+            {
+                usuario.RecuperacaoSenhaTentativas++;
+                await _usuarioRepository.Update(usuario);
+                throw new BadHttpRequestException("Código inválido ou expirado.");
+            }
+
+            var token = GerarTokenRedefinicao();
+
+            LimparRecuperacaoSenha(usuario);
+            usuario.RecuperacaoSenhaTokenHash = _cryptography.Crypt(token);
+            usuario.RecuperacaoSenhaTokenExpiraEm = DateTime.UtcNow.Add(TokenRedefinicaoExpiracao);
+
+            await _usuarioRepository.Update(usuario);
+
+            return token;
+        }
+
+        public async Task RedefinirSenha(string email, string tokenRedefinicao, string novaSenha)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(tokenRedefinicao) || string.IsNullOrWhiteSpace(novaSenha))
+                throw new BadHttpRequestException("Informe o e-mail, o token e a nova senha.");
+
+            if (novaSenha.Length < SenhaMinima)
+                throw new BadHttpRequestException($"A senha deve ter no mínimo {SenhaMinima} caracteres.");
+
+            var usuario = await _usuarioRepository.GetUsuarioByEmail(email);
+            if (usuario == null || usuario.RecuperacaoSenhaTokenHash == null || usuario.RecuperacaoSenhaTokenExpiraEm == null)
+                throw new BadHttpRequestException("Token inválido ou expirado.");
+
+            if (usuario.RecuperacaoSenhaTokenExpiraEm < DateTime.UtcNow || !_cryptography.Verify(tokenRedefinicao, usuario.RecuperacaoSenhaTokenHash))
+            {
+                LimparRecuperacaoSenha(usuario);
+                await _usuarioRepository.Update(usuario);
+                throw new BadHttpRequestException("Token inválido ou expirado.");
+            }
+
+            usuario.SenhaHash = _cryptography.Crypt(novaSenha);
+            LimparRecuperacaoSenha(usuario);
+
+            await _usuarioRepository.Update(usuario);
+        }
+
+        private static void LimparRecuperacaoSenha(Usuario usuario)
+        {
+            usuario.RecuperacaoSenhaCodigoHash = null;
+            usuario.RecuperacaoSenhaCodigoExpiraEm = null;
+            usuario.RecuperacaoSenhaTentativas = 0;
+            usuario.RecuperacaoSenhaTokenHash = null;
+            usuario.RecuperacaoSenhaTokenExpiraEm = null;
+        }
+
+        private static string GerarCodigoRecuperacao()
+        {
+            return RandomNumberGenerator.GetInt32(0, (int)Math.Pow(10, TamanhoCodigoRecuperacao)).ToString($"D{TamanhoCodigoRecuperacao}");
+        }
+
+        private static string GerarTokenRedefinicao()
+        {
+            var bytes = RandomNumberGenerator.GetBytes(32);
+            return Convert.ToBase64String(bytes).Replace("+", "-").Replace("/", "_").Replace("=", "");
         }
     }
 }

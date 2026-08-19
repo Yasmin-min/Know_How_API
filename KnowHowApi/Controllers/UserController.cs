@@ -66,4 +66,40 @@ public class UserController : Controller
 
         return Ok(await _usuarioService.EditarUsuario(editUser.UsuarioId, editUser.UserEditado));
     }
+
+    [HttpPost]
+    [Route("recuperar-senha/solicitar")]
+    [ProducesResponseType(typeof(SolicitarRecuperacaoSenhaResponseDTO), 200)]
+    public async Task<IActionResult> SolicitarRecuperacaoSenha([FromBody] SolicitarRecuperacaoSenhaRequestDTO request)
+    {
+        await _usuarioService.SolicitarRecuperacaoSenha(request.Email);
+        return Ok(new SolicitarRecuperacaoSenhaResponseDTO("Se o e-mail informado estiver cadastrado, um código de verificação foi enviado."));
+    }
+
+    [HttpPost]
+    [Route("recuperar-senha/reenviar")]
+    [ProducesResponseType(typeof(SolicitarRecuperacaoSenhaResponseDTO), 200)]
+    public async Task<IActionResult> ReenviarRecuperacaoSenha([FromBody] SolicitarRecuperacaoSenhaRequestDTO request)
+    {
+        await _usuarioService.SolicitarRecuperacaoSenha(request.Email);
+        return Ok(new SolicitarRecuperacaoSenhaResponseDTO("Se o e-mail informado estiver cadastrado, um novo código de verificação foi enviado."));
+    }
+
+    [HttpPost]
+    [Route("recuperar-senha/confirmar")]
+    [ProducesResponseType(typeof(ConfirmarCodigoRecuperacaoResponseDTO), 200)]
+    public async Task<IActionResult> ConfirmarCodigoRecuperacao([FromBody] ConfirmarCodigoRecuperacaoRequestDTO request)
+    {
+        var token = await _usuarioService.ConfirmarCodigoRecuperacao(request.Email, request.Codigo);
+        return Ok(new ConfirmarCodigoRecuperacaoResponseDTO(token));
+    }
+
+    [HttpPost]
+    [Route("recuperar-senha/redefinir")]
+    [ProducesResponseType(typeof(RedefinirSenhaResponseDTO), 200)]
+    public async Task<IActionResult> RedefinirSenha([FromBody] RedefinirSenhaRequestDTO request)
+    {
+        await _usuarioService.RedefinirSenha(request.Email, request.TokenRedefinicao, request.NovaSenha);
+        return Ok(new RedefinirSenhaResponseDTO("Senha redefinida com sucesso."));
+    }
 }

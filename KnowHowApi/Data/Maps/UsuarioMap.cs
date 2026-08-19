@@ -23,6 +23,8 @@ namespace KnowHowApi.Data.Maps
                 .WithMany()
                 .HasForeignKey(u => u.AreaInteresseId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(u => u.RecuperacaoSenhaTentativas).IsRequired().HasDefaultValue(0);
         }
     }
 }
