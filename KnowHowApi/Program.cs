@@ -47,6 +47,7 @@ builder.Services.AddScoped<IAreaInteresseRepository, AreaInteresseRepository>();
 builder.Services.AddScoped<ICryptography, Cryptography>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();
 builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
+builder.Services.AddScoped<IAulaRepository, AulaRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSignalR();
@@ -102,6 +103,8 @@ if (!string.IsNullOrEmpty(port))
 {
     app.Urls.Add($"http://0.0.0.0:{port}");
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

@@ -85,6 +85,59 @@ namespace KnowHowApi.Migrations
                         });
                 });
 
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Aula", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AreaInteresseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CriadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int?>("DuracaoMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nivel")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal?>("Valor")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AreaInteresseId");
+
+                    b.HasIndex("ProfessorId", "Status");
+
+                    b.HasIndex("ProfessorId", "Titulo");
+
+                    b.ToTable("Aulas", (string)null);
+                });
+
             modelBuilder.Entity("KnowHowApi.Domain.Models.PerfilProfessor", b =>
                 {
                     b.Property<int>("Id")
@@ -206,6 +259,24 @@ namespace KnowHowApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Usuarios", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Aula", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.AreaInteresse", "AreaInteresse")
+                        .WithMany()
+                        .HasForeignKey("AreaInteresseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AreaInteresse");
+
+                    b.Navigation("Professor");
                 });
 
             modelBuilder.Entity("KnowHowApi.Domain.Models.PerfilProfessor", b =>

@@ -6,5 +6,6 @@ namespace KnowHowApi.Services.Interfaces
     {
         Task<List<ProfessorDTO>> ListarProfessores();
         Task<ProfessorDashboardResponseDTO?> ObterDashboard(int usuarioId);
+        Task<ProfessorAulaResponseDTO> CriarAula(int professorId, CriarAulaRequestDTO request);
     }
 }

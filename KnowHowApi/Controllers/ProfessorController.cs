@@ -42,4 +42,19 @@ public class ProfessorController : Controller
 
         return Ok(dashboard);
     }
+
+    [Authorize(Roles = "Professor")]
+    [HttpPost]
+    [Route("aulas")]
+    [ProducesResponseType(typeof(ProfessorAulaResponseDTO), 201)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> CriarAula([FromBody] CriarAulaRequestDTO request)
+    {
+        var usuarioIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(usuarioIdClaim, out var professorId))
+            return Unauthorized();
+
+        var aula = await _professorService.CriarAula(professorId, request);
+        return StatusCode(StatusCodes.Status201Created, aula);
+    }
 }
