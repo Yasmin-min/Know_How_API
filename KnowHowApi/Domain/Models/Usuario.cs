@@ -15,6 +15,12 @@ namespace KnowHowApi.Domain.Models
         public int? AreaInteresseId { get; set; }
         public AreaInteresse? AreaInteresse { get; set; }
 
+        public string? RecuperacaoSenhaCodigoHash { get; set; }
+        public DateTime? RecuperacaoSenhaCodigoExpiraEm { get; set; }
+        public int RecuperacaoSenhaTentativas { get; set; }
+        public string? RecuperacaoSenhaTokenHash { get; set; }
+        public DateTime? RecuperacaoSenhaTokenExpiraEm { get; set; }
+
         public Usuario()
         {
         }

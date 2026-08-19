@@ -16,6 +16,7 @@ namespace KnowHowApi.Tests.Services
         private readonly Mock<IAreaInteresseRepository> _areaInteresseRepositoryMock = new();
         private readonly Mock<IProfessorRepository> _professorRepositoryMock = new();
         private readonly Mock<ICryptography> _cryptographyMock = new();
+        private readonly Mock<IEmailService> _emailServiceMock = new();
         private readonly UsuarioService _service;
 
         public UsuarioServiceTests()
@@ -33,7 +34,7 @@ namespace KnowHowApi.Tests.Services
                 SecretKey = "chave-secreta-de-teste-com-tamanho-suficiente"
             };
 
-            _service = new UsuarioService(_usuarioRepositoryMock.Object, _areaInteresseRepositoryMock.Object, _professorRepositoryMock.Object, _cryptographyMock.Object, jwtSettings);
+            _service = new UsuarioService(_usuarioRepositoryMock.Object, _areaInteresseRepositoryMock.Object, _professorRepositoryMock.Object, _cryptographyMock.Object, _emailServiceMock.Object, jwtSettings);
         }
 
         private static RegisterUsuarioDTO NovoAlunoValido() => new()
