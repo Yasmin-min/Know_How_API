@@ -25,5 +25,12 @@ namespace KnowHowApi.Data.Repositories
             await _context.SaveChangesAsync();
             return perfil;
         }
+
+        public async Task<PerfilProfessor?> GetPerfilProfessorByUsuarioId(int usuarioId)
+        {
+            return await _context.PerfilProfessores
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId);
+        }
     }
 };
