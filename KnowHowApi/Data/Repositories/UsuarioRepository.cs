@@ -17,6 +17,16 @@ namespace KnowHowApi.Data.Repositories
             .FirstOrDefaultAsync(c => c.Email == email);
         }
 
+        // Os e-mails são gravados como o usuário digitou; aqui a comparação ignora maiúsculas.
+        public async Task<Usuario?> GetUsuarioByEmailIgnorandoCaixa(string emailMinusculo)
+        {
+            return await _context.Usuarios
+                .AsNoTracking()
+                .Where(u => u.Email.Trim().ToLower() == emailMinusculo)
+                .Select(u => new Usuario { Id = u.Id, Nome = u.Nome, Email = u.Email, TipoUsuario = u.TipoUsuario })
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Usuario?> GetUsuarioByCpf(string cpf)
         {
             return await _context.Usuarios
@@ -26,6 +36,7 @@ namespace KnowHowApi.Data.Repositories
         public async Task<Usuario?> GetUsuarioById(int id)
         {
             return await _context.Usuarios
+            .Include(c => c.AreaInteresse)
             .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -34,10 +45,6 @@ namespace KnowHowApi.Data.Repositories
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
             return usuario;
-        }
-        public async Task<List<Usuario>> GetAllUsers()
-        {
-            return await _context.Usuarios.ToListAsync();
         }
         public async Task<Usuario> Update(Usuario userEdit)
         {

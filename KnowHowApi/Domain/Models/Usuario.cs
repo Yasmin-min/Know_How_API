@@ -14,6 +14,8 @@ namespace KnowHowApi.Domain.Models
         public string? Cpf { get; set; }
         public int? AreaInteresseId { get; set; }
         public AreaInteresse? AreaInteresse { get; set; }
+        public byte[]? FotoPerfil { get; set; }
+        public string? FotoPerfilContentType { get; set; }
 
         public string? RecuperacaoSenhaCodigoHash { get; set; }
         public DateTime? RecuperacaoSenhaCodigoExpiraEm { get; set; }
