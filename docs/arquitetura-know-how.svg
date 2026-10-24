@@ -1,0 +1,157 @@
+<svg viewBox="0 0 1280 580" width="1280" height="580" xmlns="http://www.w3.org/2000/svg">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap');
+text { font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif; }
+.stage { fill: #14203a; font-size: 17px; font-weight: 600; }
+.icon { fill: none; stroke: #14203a; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.box { fill: #1f2d4a; } .box-steel { fill: #24507f; } .pill { fill: #33466d; }
+.outline { fill: #ffffff; stroke: #77829a; stroke-width: 1.5; } .orange { fill: #c25812; }
+.t-on { fill: #ffffff; font-size: 15px; font-weight: 600; } .t-on-sm { fill: #c3cde0; font-size: 12.5px; }
+.t-pill { fill: #ffffff; font-size: 13px; }
+.t-num { fill: #c3cde0; font-size: 11px; font-family: "IBM Plex Mono", Consolas, monospace; }
+.t-mono { fill: #c3cde0; font-size: 12px; font-family: "IBM Plex Mono", Consolas, monospace; }
+.t-fg { fill: #14203a; font-size: 14px; font-weight: 500; } .t-fg-strong { fill: #14203a; font-size: 18px; font-weight: 600; }
+.t-muted { fill: #5d6880; font-size: 12.5px; }
+.wire { fill: none; stroke: #77829a; stroke-width: 1.5; } .wire-dash { fill: none; stroke: #77829a; stroke-width: 1.5; stroke-dasharray: 4 4; }
+.arrowhead { fill: #77829a; }
+.icon-on { fill: none; stroke: #ffffff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cyl-body { fill: #a9c6e8; } .cyl-band { fill: #1b2742; } .cyl-top { fill: #1b2742; }
+.cyl-top-hi { fill: none; stroke: #dfe9f6; stroke-width: 1.2; opacity: .5; }
+</style>
+<rect width="1280" height="580" fill="#ffffff"/>
+      <defs>
+        <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" class="arrowhead"/>
+        </marker>
+      </defs>
+
+      <!-- Stage icons -->
+      <g class="icon">
+        <!-- monitor -->
+        <rect x="88" y="34" width="34" height="24" rx="3"/><path d="M105 58 V66 M95 66 H115"/>
+        <!-- two-way arrows -->
+        <path d="M290 40 H322 M314 33 L322 40 L314 47"/><path d="M322 56 H290 M298 49 L290 56 L298 63"/>
+        <!-- braces -->
+        <path d="M506 32 c-6 0 -6 4 -6 9 v4 c0 3 -3 4 -5 4 c2 0 5 1 5 4 v4 c0 5 0 9 6 9"/>
+        <path d="M526 32 c6 0 6 4 6 9 v4 c0 3 3 4 5 4 c-2 0 -5 1 -5 4 v4 c0 5 0 9 -6 9"/>
+        <!-- sliders -->
+        <path d="M718 38 H752 M718 50 H752 M718 62 H752"/><circle cx="728" cy="38" r="3.5"/><circle cx="744" cy="50" r="3.5"/><circle cx="732" cy="62" r="3.5"/>
+        <!-- stacked sheets -->
+        <rect x="928" y="34" width="28" height="20" rx="2"/><path d="M932 58 H960 V38"/><path d="M936 62 H964 V42"/>
+        <!-- database -->
+        <ellipse cx="1150" cy="36" rx="16" ry="5"/><path d="M1134 36 V62 c0 3 7 5 16 5 s16 -2 16 -5 V36 M1134 49 c0 3 7 5 16 5 s16 -2 16 -5"/>
+      </g>
+
+      <!-- Stage titles -->
+      <g text-anchor="middle">
+        <text class="stage" x="105" y="98">Clientes</text>
+        <text class="stage" x="305" y="98">Protocolos</text>
+        <text class="stage" x="515" y="98">API</text>
+        <text class="stage" x="735" y="98">Regras de negócio</text>
+        <text class="stage" x="945" y="98">Acesso a dados</text>
+        <text class="stage" x="1150" y="98">Banco de dados</text>
+      </g>
+
+      <!-- Column A: clients -->
+      <rect class="box-steel" x="30" y="170" width="150" height="200" rx="12"/>
+      <g class="icon-on">
+        <rect x="85" y="208" width="40" height="28" rx="3"/><path d="M105 236 V244 M95 244 H115"/>
+        <path d="M93 228 L101 220 L107 225 L117 215"/>
+      </g>
+      <g text-anchor="middle">
+        <text class="t-on" x="105" y="290">Frontend PWA</text>
+        <text class="t-on-sm" x="105" y="310">alunos e professores</text>
+      </g>
+      <rect class="outline" x="30" y="420" width="150" height="46" rx="6"/>
+      <text class="t-fg" x="105" y="448" text-anchor="middle">Swagger UI (dev)</text>
+
+      <!-- Column B: protocols -->
+      <rect class="box" x="230" y="170" width="150" height="86" rx="10"/>
+      <g text-anchor="middle">
+        <text class="t-on" x="305" y="206">REST · HTTPS</text>
+        <text class="t-mono" x="305" y="228">Bearer JWT</text>
+      </g>
+      <rect class="box" x="230" y="284" width="150" height="86" rx="10"/>
+      <g text-anchor="middle">
+        <text class="t-on" x="305" y="320">SignalR · WS</text>
+        <text class="t-mono" x="305" y="342">/api/chatHub</text>
+      </g>
+
+      <path class="wire" d="M180 230 H205 V213 H227" marker-end="url(#seta)"/>
+      <path class="wire" d="M180 310 H205 V327 H227" marker-end="url(#seta)"/>
+      <path class="wire" d="M180 443 H215 V240 H227" marker-end="url(#seta)"/>
+
+      <!-- Column C: API pipeline -->
+      <rect class="box" x="430" y="150" width="170" height="300" rx="12"/>
+      <text class="t-on" x="515" y="180" text-anchor="middle">ASP.NET Core 9</text>
+      <g>
+        <rect class="pill" x="440" y="198" width="150" height="36" rx="7"/>
+        <text class="t-num" x="451" y="220">1</text><text class="t-pill" x="466" y="221">Tratamento de erros</text>
+        <rect class="pill" x="440" y="244" width="150" height="36" rx="7"/>
+        <text class="t-num" x="451" y="266">2</text><text class="t-pill" x="466" y="267">CORS</text>
+        <rect class="pill" x="440" y="290" width="150" height="36" rx="7"/>
+        <text class="t-num" x="451" y="312">3</text><text class="t-pill" x="466" y="313">Autenticação JWT</text>
+        <rect class="pill" x="440" y="336" width="150" height="36" rx="7"/>
+        <text class="t-num" x="451" y="358">4</text><text class="t-pill" x="466" y="359">Autorização (papel)</text>
+        <rect class="pill" x="440" y="382" width="150" height="36" rx="7"/>
+        <text class="t-num" x="451" y="404">5</text><text class="t-pill" x="466" y="405">Controllers · Hub</text>
+      </g>
+
+      <path class="wire" d="M380 213 H427" marker-end="url(#seta)"/>
+      <path class="wire" d="M380 327 H427" marker-end="url(#seta)"/>
+
+      <!-- Column D: services -->
+      <path class="wire" d="M600 300 H626 M626 180 V442"/>
+      <path class="wire" d="M626 180 H647" marker-end="url(#seta)"/>
+      <path class="wire" d="M626 232 H647" marker-end="url(#seta)"/>
+      <path class="wire" d="M626 284 H647" marker-end="url(#seta)"/>
+      <path class="wire" d="M626 336 H647" marker-end="url(#seta)"/>
+      <path class="wire" d="M626 388 H647" marker-end="url(#seta)"/>
+      <path class="wire" d="M626 442 H647" marker-end="url(#seta)"/>
+
+      <g text-anchor="middle">
+        <rect class="box" x="650" y="160" width="170" height="40" rx="8"/><text class="t-pill" x="735" y="185">UsuarioService</text>
+        <rect class="box" x="650" y="212" width="170" height="40" rx="8"/><text class="t-pill" x="735" y="237">AlunoService</text>
+        <rect class="box" x="650" y="264" width="170" height="40" rx="8"/><text class="t-pill" x="735" y="289">ProfessorService</text>
+        <rect class="box" x="650" y="316" width="170" height="40" rx="8"/><text class="t-pill" x="735" y="341">AulaAgendadaService</text>
+        <rect class="box" x="650" y="368" width="170" height="40" rx="8"/><text class="t-pill" x="735" y="393">ChatService</text>
+        <rect class="outline" x="650" y="422" width="170" height="40" rx="8"/><text class="t-fg" x="735" y="447">BCrypt · E-mail</text>
+      </g>
+
+      <!-- SMTP (external) -->
+      <path class="wire" d="M735 462 V495" marker-end="url(#seta)"/>
+      <rect class="orange" x="650" y="498" width="170" height="52" rx="4"/>
+      <g text-anchor="middle">
+        <text class="t-on" x="735" y="520">Servidor SMTP</text>
+        <text class="t-on" x="735" y="539" style="font-size:12.5px;font-weight:400">recuperação de senha</text>
+      </g>
+
+      <!-- Column E: repositories -->
+      <path class="wire" d="M820 180 H845 M820 232 H845 M820 284 H845 M820 336 H845 M820 388 H845 M845 180 V388"/>
+      <path class="wire" d="M845 270 H867" marker-end="url(#seta)"/>
+      <rect class="box" x="870" y="170" width="150" height="200" rx="12"/>
+      <g text-anchor="middle">
+        <text class="t-on" x="945" y="238">Repositories</text>
+        <text class="t-on-sm" x="945" y="262">EF Core 9</text>
+        <text class="t-on-sm" x="945" y="282">Npgsql</text>
+        <text class="t-mono" x="945" y="310">LINQ → SQL</text>
+      </g>
+
+      <!-- Column F: PostgreSQL cylinder -->
+      <path class="wire" d="M1020 270 H1057" marker-end="url(#seta)"/>
+      <path class="cyl-body" d="M1060 175 V395 a90 18 0 0 0 180 0 V175 z"/>
+      <path class="cyl-band" d="M1060 222 a90 18 0 0 0 180 0 v16 a90 18 0 0 1 -180 0 z"/>
+      <path class="cyl-band" d="M1060 272 a90 18 0 0 0 180 0 v16 a90 18 0 0 1 -180 0 z"/>
+      <path class="cyl-band" d="M1060 322 a90 18 0 0 0 180 0 v16 a90 18 0 0 1 -180 0 z"/>
+      <path class="cyl-band" d="M1060 372 a90 18 0 0 0 180 0 v23 a90 18 0 0 1 -180 0 z"/>
+      <ellipse class="cyl-top" cx="1150" cy="175" rx="90" ry="18"/>
+      <ellipse class="cyl-top-hi" cx="1150" cy="175" rx="74" ry="11"/>
+      <g text-anchor="middle">
+        <text class="t-fg-strong" x="1150" y="443">PostgreSQL 17</text>
+        <text class="t-muted" x="1150" y="462">knowhowdb · Neon em produção</text>
+      </g>
+
+      <path class="wire-dash" d="M1150 472 V498"/>
+      <rect class="outline" x="1075" y="500" width="150" height="46" rx="6"/>
+      <text class="t-fg" x="1150" y="528" text-anchor="middle">Migrations (EF Core)</text>
+    </svg>
