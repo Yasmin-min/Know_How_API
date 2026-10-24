@@ -9,6 +9,9 @@ namespace KnowHowApi.Domain.DTOs
         public DateTime DataHoraInicio { get; set; }
         public DateTime DataHoraFim { get; set; }
         public int TotalAlunos { get; set; }
+        // Aulas são individuais: o aluno da aula.
+        public int AlunoId { get; set; }
+        public string AlunoNome { get; set; } = string.Empty;
         public string Status { get; set; }
     }
 }

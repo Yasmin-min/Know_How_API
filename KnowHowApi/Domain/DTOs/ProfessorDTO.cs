@@ -13,6 +13,7 @@ namespace KnowHowApi.Domain.DTOs
         public string Descricao { get; set; }
         public bool Disponivel { get; set; }
         public string AvatarVariante { get; set; }
+        public List<ProfessorAulaPublicadaDTO> Aulas { get; set; } = new();
 
         public ProfessorDTO()
         {
