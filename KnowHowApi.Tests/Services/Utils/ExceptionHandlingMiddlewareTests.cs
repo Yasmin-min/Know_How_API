@@ -40,6 +40,24 @@ namespace KnowHowApi.Tests.Services.Utils
         }
 
         [Fact]
+        public async Task InvokeAsync_NotFoundException_Retorna404ComMensagemEmJson()
+        {
+            var (statusCode, message) = await ExecutarAsync(_ => throw new NotFoundException("Aula não encontrada."));
+
+            Assert.Equal(StatusCodes.Status404NotFound, statusCode);
+            Assert.Equal("Aula não encontrada.", message);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_ConflictException_Retorna409ComMensagemEmJson()
+        {
+            var (statusCode, message) = await ExecutarAsync(_ => throw new ConflictException("Já existe uma aula neste horário."));
+
+            Assert.Equal(StatusCodes.Status409Conflict, statusCode);
+            Assert.Equal("Já existe uma aula neste horário.", message);
+        }
+
+        [Fact]
         public async Task InvokeAsync_BadHttpRequestException_Retorna400ComMensagemEmJson()
         {
             var (statusCode, message) = await ExecutarAsync(_ => throw new BadHttpRequestException("Informe e-mail e senha"));

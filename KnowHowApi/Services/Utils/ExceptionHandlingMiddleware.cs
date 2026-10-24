@@ -26,6 +26,18 @@ namespace KnowHowApi.Services.Utils
             {
                 await EscreverErroAsync(context, StatusCodes.Status400BadRequest, ex.Message);
             }
+            catch (NotFoundException ex)
+            {
+                await EscreverErroAsync(context, StatusCodes.Status404NotFound, ex.Message);
+            }
+            catch (ForbiddenException ex)
+            {
+                await EscreverErroAsync(context, StatusCodes.Status403Forbidden, ex.Message);
+            }
+            catch (ConflictException ex)
+            {
+                await EscreverErroAsync(context, StatusCodes.Status409Conflict, ex.Message);
+            }
             catch (BadHttpRequestException ex)
             {
                 var statusCode = ex.StatusCode >= 400 && ex.StatusCode < 600 ? ex.StatusCode : StatusCodes.Status400BadRequest;
