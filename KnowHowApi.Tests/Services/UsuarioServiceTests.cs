@@ -257,35 +257,85 @@ namespace KnowHowApi.Tests.Services
             _usuarioRepositoryMock.Verify(r => r.CriarUsuario(It.IsAny<Usuario>()), Times.Never);
         }
 
-        [Fact]
-        public async Task EditarUsuario_AtualizaDataNascimentoECpf()
+        private Usuario UsuarioComSenha()
         {
-            var usuarioExistente = new Usuario
-            {
-                Id = 1,
-                Nome = "Nome Antigo",
-                Email = "antigo@knowhow.com",
-                TipoUsuario = TipoUsuario.Professor,
-                DataNascimento = new DateTime(1990, 1, 1),
-                Cpf = "11111111111"
-            };
-
-            _usuarioRepositoryMock.Setup(r => r.GetUsuarioById(1)).ReturnsAsync(usuarioExistente);
+            var usuario = new Usuario { Id = 7, Nome = "Fulano", SenhaHash = "hash-atual", TipoUsuario = TipoUsuario.Aluno };
+            _usuarioRepositoryMock.Setup(r => r.GetUsuarioById(7)).ReturnsAsync(usuario);
             _usuarioRepositoryMock.Setup(r => r.Update(It.IsAny<Usuario>())).ReturnsAsync((Usuario u) => u);
+            return usuario;
+        }
 
-            var edicao = new UsuarioDTO
-            {
-                Nome = "Nome Novo",
-                Email = "novo@knowhow.com",
-                TipoUsuario = TipoUsuario.Professor,
-                DataNascimento = new DateTime(1991, 2, 3),
-                Cpf = "22222222222"
-            };
+        [Fact]
+        public async Task AlterarSenha_ComSenhaAtualCorreta_AtualizaHashELimpaRecuperacao()
+        {
+            var usuario = UsuarioComSenha();
+            usuario.RecuperacaoSenhaCodigoHash = "codigo";
+            _cryptographyMock.Setup(c => c.Verify("atual123", "hash-atual")).Returns(true);
 
-            var atualizado = await _service.EditarUsuario(1, edicao);
+            await _service.AlterarSenha(7, "atual123", "nova1234");
 
-            Assert.Equal(edicao.DataNascimento, atualizado.DataNascimento);
-            Assert.Equal(edicao.Cpf, atualizado.Cpf);
+            Assert.Equal("hash-fake", usuario.SenhaHash);
+            Assert.Null(usuario.RecuperacaoSenhaCodigoHash);
+            _usuarioRepositoryMock.Verify(r => r.Update(usuario), Times.Once);
+        }
+
+        [Fact]
+        public async Task AlterarSenha_ComSenhaAtualIncorreta_LancaBadRequestSemSalvar()
+        {
+            UsuarioComSenha();
+            _cryptographyMock.Setup(c => c.Verify(It.IsAny<string>(), "hash-atual")).Returns(false);
+
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.AlterarSenha(7, "errada", "nova1234"));
+            _usuarioRepositoryMock.Verify(r => r.Update(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AlterarSenha_NovaSenhaCurta_LancaBadRequest()
+        {
+            UsuarioComSenha();
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.AlterarSenha(7, "atual123", "123"));
+        }
+
+        [Fact]
+        public async Task AlterarSenha_NovaSenhaIgualAAtual_LancaBadRequest()
+        {
+            UsuarioComSenha();
+            _cryptographyMock.Setup(c => c.Verify("atual123", "hash-atual")).Returns(true);
+            await Assert.ThrowsAsync<BadHttpRequestException>(() => _service.AlterarSenha(7, "atual123", "atual123"));
+        }
+
+        [Fact]
+        public async Task ObterFoto_DeAluno_RetornaFotoDoUsuario()
+        {
+            var usuario = UsuarioComSenha();
+            usuario.FotoPerfil = new byte[] { 1, 2, 3 };
+            usuario.FotoPerfilContentType = "image/png";
+
+            var foto = await _service.ObterFoto(7);
+
+            Assert.NotNull(foto);
+            Assert.Equal("image/png", foto!.Value.ContentType);
+            Assert.Equal(new byte[] { 1, 2, 3 }, foto.Value.Bytes);
+        }
+
+        [Fact]
+        public async Task ObterFoto_DeProfessor_UsaFotoDoPerfilProfissional()
+        {
+            var usuario = UsuarioComSenha();
+            usuario.TipoUsuario = TipoUsuario.Professor;
+            _professorRepositoryMock.Setup(r => r.GetPerfilProfessorByUsuarioId(7))
+                .ReturnsAsync(new PerfilProfessor { FotoPerfil = new byte[] { 9 }, FotoPerfilContentType = "image/jpeg" });
+
+            var foto = await _service.ObterFoto(7);
+
+            Assert.Equal(new byte[] { 9 }, foto!.Value.Bytes);
+        }
+
+        [Fact]
+        public async Task ObterFoto_SemFoto_RetornaNulo()
+        {
+            UsuarioComSenha();
+            Assert.Null(await _service.ObterFoto(7));
         }
     }
 }

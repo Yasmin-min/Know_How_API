@@ -191,26 +191,6 @@ namespace KnowHowApi.Services
             return new LoginResponseDTO(usuario, tokenString);
         }
 
-        public async Task<List<Usuario>> ListarTodosOsUsuarios()
-        {
-            return await _usuarioRepository.GetAllUsers();
-        }
-
-        public async Task<Usuario> EditarUsuario(int usuarioId, UsuarioDTO userEditDto)
-        {
-            var usuario = await _usuarioRepository.GetUsuarioById(usuarioId);
-            if (usuario == null)
-                throw new BadHttpRequestException("Usuário não encontrado.");
-
-            usuario.Nome = userEditDto.Nome;
-            usuario.Email = userEditDto.Email;
-            usuario.TipoUsuario = userEditDto.TipoUsuario;
-            usuario.DataNascimento = userEditDto.DataNascimento;
-            usuario.Cpf = userEditDto.Cpf;
-
-            return await _usuarioRepository.Update(usuario);
-        }
-
         public async Task SolicitarRecuperacaoSenha(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -300,6 +280,50 @@ namespace KnowHowApi.Services
             LimparRecuperacaoSenha(usuario);
 
             await _usuarioRepository.Update(usuario);
+        }
+
+        public async Task AlterarSenha(int usuarioId, string senhaAtual, string novaSenha)
+        {
+            if (string.IsNullOrEmpty(senhaAtual) || string.IsNullOrWhiteSpace(novaSenha))
+                throw new BadHttpRequestException("Informe a senha atual e a nova senha.");
+
+            if (novaSenha.Length < SenhaMinima)
+                throw new BadHttpRequestException($"A senha deve ter no mínimo {SenhaMinima} caracteres.");
+
+            var usuario = await _usuarioRepository.GetUsuarioById(usuarioId);
+            if (usuario == null)
+                throw new BadHttpRequestException("Usuário não encontrado.");
+
+            // 400 (e não 401): um 401 faria o app encerrar a sessão de quem só errou a senha atual.
+            if (!_cryptography.Verify(senhaAtual, usuario.SenhaHash))
+                throw new BadHttpRequestException("A senha atual está incorreta.");
+
+            if (senhaAtual == novaSenha)
+                throw new BadHttpRequestException("A nova senha deve ser diferente da atual.");
+
+            usuario.SenhaHash = _cryptography.Crypt(novaSenha);
+            // Um pedido de recuperação pendente não deve poder sobrescrever a senha recém-definida.
+            LimparRecuperacaoSenha(usuario);
+            await _usuarioRepository.Update(usuario);
+        }
+
+        // A foto do professor fica no perfil profissional; a dos demais usuários, no próprio usuário.
+        public async Task<(byte[] Bytes, string ContentType)?> ObterFoto(int usuarioId)
+        {
+            var usuario = await _usuarioRepository.GetUsuarioById(usuarioId);
+            if (usuario == null)
+                return null;
+
+            var perfil = usuario.TipoUsuario == TipoUsuario.Professor
+                ? await _professorRepository.GetPerfilProfessorByUsuarioId(usuarioId)
+                : null;
+
+            var bytes = perfil?.FotoPerfil ?? usuario.FotoPerfil;
+            if (bytes == null || bytes.Length == 0)
+                return null;
+
+            var contentType = perfil?.FotoPerfil != null ? perfil.FotoPerfilContentType : usuario.FotoPerfilContentType;
+            return (bytes, contentType ?? "image/jpeg");
         }
 
         private static void LimparRecuperacaoSenha(Usuario usuario)

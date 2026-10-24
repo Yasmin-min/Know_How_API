@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using KnowHowApi.Domain.DTOs;
 using KnowHowApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -47,26 +48,6 @@ public class UserController : Controller
         return Ok(login);
     }
 
-    [Authorize]
-    [HttpGet]
-    [Route("listarTodosOsUsuarios")]
-    public async Task<IActionResult> ListarTodosOsUsuarios()
-    {
-        return Ok(await _usuarioService.ListarTodosOsUsuarios());
-    }
-
-    [Authorize]
-    [HttpPost]
-    [Route("editarUsuario")]
-    public async Task<IActionResult> EditarUsuario([FromBody] EditUserDTO editUser)
-    {
-        TryValidateModel(editUser);
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        return Ok(await _usuarioService.EditarUsuario(editUser.UsuarioId, editUser.UserEditado));
-    }
-
     [HttpPost]
     [Route("recuperar-senha/solicitar")]
     [ProducesResponseType(typeof(SolicitarRecuperacaoSenhaResponseDTO), 200)]
@@ -101,5 +82,37 @@ public class UserController : Controller
     {
         await _usuarioService.RedefinirSenha(request.Email, request.TokenRedefinicao, request.NovaSenha);
         return Ok(new RedefinirSenhaResponseDTO("Senha redefinida com sucesso."));
+    }
+
+    [Authorize]
+    [HttpPut]
+    [Route("senha")]
+    [ProducesResponseType(typeof(RedefinirSenhaResponseDTO), 200)]
+    [ProducesResponseType(400)]
+    public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaRequestDTO request)
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId))
+            return Unauthorized();
+
+        await _usuarioService.AlterarSenha(usuarioId, request.SenhaAtual, request.NovaSenha);
+        return Ok(new RedefinirSenhaResponseDTO("Senha alterada com sucesso."));
+    }
+
+    // Foto de perfil como imagem (e não embutida em base64 nas listas). Exige login; o app a busca com o token.
+    [Authorize]
+    [HttpGet]
+    [Route("{usuarioId:int}/foto")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(204)]
+    public async Task<IActionResult> ObterFoto([FromRoute] int usuarioId)
+    {
+        var foto = await _usuarioService.ObterFoto(usuarioId);
+        if (foto == null)
+            return NoContent();
+
+        var etag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue(
+            "\"" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(foto.Value.Bytes))[..16] + "\"");
+        Response.Headers.CacheControl = "private, max-age=300";
+        return File(foto.Value.Bytes, foto.Value.ContentType, lastModified: null, entityTag: etag);
     }
 }
