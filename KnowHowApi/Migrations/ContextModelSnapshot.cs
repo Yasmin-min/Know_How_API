@@ -138,6 +138,339 @@ namespace KnowHowApi.Migrations
                     b.ToTable("Aulas", (string)null);
                 });
 
+            modelBuilder.Entity("KnowHowApi.Domain.Models.AulaAgendada", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AlunoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AulaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CanceladaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CriadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasDefaultValue("");
+
+                    b.Property<int>("DuracaoMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Fim")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Inicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AulaId");
+
+                    b.HasIndex("AlunoId", "Inicio");
+
+                    b.HasIndex("ProfessorId", "Inicio");
+
+                    b.ToTable("AulasAgendadas", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Avaliacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AlunoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("AtualizadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Comentario")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CriadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Nota")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlunoId");
+
+                    b.HasIndex("ProfessorId", "AlunoId")
+                        .IsUnique();
+
+                    b.ToTable("Avaliacoes", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Avaliacoes_Nota", "\"Nota\" BETWEEN 1 AND 5");
+                        });
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.ConfiguracaoPrecos", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AtualizadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("AulaExperimentalDuracaoMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AulaExperimentalPercentualDesconto")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AulaExperimentalTipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessorId")
+                        .IsUnique();
+
+                    b.ToTable("ConfiguracoesPrecos", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Contratacao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AlunoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AulasUsadas")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CriadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateOnly?>("Fim")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("Inicio")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("OfertaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("PagoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StatusPagamento")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("TotalAulas")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlunoId");
+
+                    b.HasIndex("ProfessorId", "CriadaEm");
+
+                    b.ToTable("Contratacoes", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Conversa", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AlunoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CriadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessorId");
+
+                    b.HasIndex("AlunoId", "ProfessorId")
+                        .IsUnique();
+
+                    b.ToTable("Conversas", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Mensagem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConversaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("EnviadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Lida")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("RemetenteId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RemetenteId");
+
+                    b.HasIndex("ConversaId", "EnviadaEm");
+
+                    b.ToTable("Mensagens", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.NotaAluno", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AlunoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("AtualizadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlunoId");
+
+                    b.HasIndex("ProfessorId", "AlunoId")
+                        .IsUnique();
+
+                    b.ToTable("NotasAluno", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Pacote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<int>("DuracaoMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuantidadeAulas")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ValidadeDias")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ValorTotal")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessorId");
+
+                    b.ToTable("Pacotes", (string)null);
+                });
+
             modelBuilder.Entity("KnowHowApi.Domain.Models.PerfilProfessor", b =>
                 {
                     b.Property<int>("Id")
@@ -197,6 +530,76 @@ namespace KnowHowApi.Migrations
                     b.ToTable("PerfilProfessores", (string)null);
                 });
 
+            modelBuilder.Entity("KnowHowApi.Domain.Models.PlanoMensal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("AulasPorSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasDefaultValue("");
+
+                    b.Property<int>("DuracaoMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ValorMensal")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessorId");
+
+                    b.ToTable("PlanosMensais", (string)null);
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.ProfessorAluno", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AlunoId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProfessorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlunoId");
+
+                    b.HasIndex("ProfessorId", "AlunoId")
+                        .IsUnique();
+
+                    b.ToTable("ProfessorAlunos", (string)null);
+                });
+
             modelBuilder.Entity("KnowHowApi.Domain.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -218,6 +621,13 @@ namespace KnowHowApi.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<byte[]>("FotoPerfil")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("FotoPerfilContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -279,6 +689,176 @@ namespace KnowHowApi.Migrations
                     b.Navigation("Professor");
                 });
 
+            modelBuilder.Entity("KnowHowApi.Domain.Models.AulaAgendada", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Aula", "Aula")
+                        .WithMany()
+                        .HasForeignKey("AulaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Aula");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Avaliacao", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.ConfiguracaoPrecos", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("KnowHowApi.Domain.Models.PrecoPorDuracao", "PrecosPorDuracao", b1 =>
+                        {
+                            b1.Property<int>("ConfiguracaoPrecosId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("DuracaoMinutos")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Valor")
+                                .HasColumnType("numeric");
+
+                            b1.HasKey("ConfiguracaoPrecosId", "__synthesizedOrdinal");
+
+                            b1.ToTable("ConfiguracoesPrecos");
+
+                            b1.ToJson("PrecosPorDuracao");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ConfiguracaoPrecosId");
+                        });
+
+                    b.Navigation("PrecosPorDuracao");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Contratacao", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Conversa", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Mensagem", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Conversa", "Conversa")
+                        .WithMany()
+                        .HasForeignKey("ConversaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Remetente")
+                        .WithMany()
+                        .HasForeignKey("RemetenteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversa");
+
+                    b.Navigation("Remetente");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.NotaAluno", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.Pacote", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Professor");
+                });
+
             modelBuilder.Entity("KnowHowApi.Domain.Models.PerfilProfessor", b =>
                 {
                     b.HasOne("KnowHowApi.Domain.Models.AreaInteresse", "AreaEspecialidade")
@@ -295,6 +875,36 @@ namespace KnowHowApi.Migrations
                     b.Navigation("AreaEspecialidade");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.PlanoMensal", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Professor");
+                });
+
+            modelBuilder.Entity("KnowHowApi.Domain.Models.ProfessorAluno", b =>
+                {
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Aluno")
+                        .WithMany()
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("KnowHowApi.Domain.Models.Usuario", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Professor");
                 });
 
             modelBuilder.Entity("KnowHowApi.Domain.Models.Usuario", b =>

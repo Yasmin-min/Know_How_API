@@ -49,6 +49,21 @@ builder.Services.AddScoped<IProfessorService, ProfessorService>();
 builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
 builder.Services.AddScoped<IAulaRepository, AulaRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAlunoService, AlunoService>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IAulaAgendadaRepository, AulaAgendadaRepository>();
+builder.Services.AddScoped<IAulaAgendadaService, AulaAgendadaService>();
+builder.Services.AddScoped<IProfessorAlunoRepository, ProfessorAlunoRepository>();
+builder.Services.AddScoped<IProfessorAlunoService, ProfessorAlunoService>();
+builder.Services.AddScoped<IPlanosRepository, PlanosRepository>();
+builder.Services.AddScoped<IPlanosService, PlanosService>();
+builder.Services.AddScoped<IAvaliacaoRepository, AvaliacaoRepository>();
+builder.Services.AddScoped<IAvaliacaoService, AvaliacaoService>();
+builder.Services.AddScoped<IChamadaService, ChamadaService>();
+builder.Services.AddSingleton<SalasChamada>();
+builder.Services.Configure<TurnSettings>(builder.Configuration.GetSection("Turn"));
+builder.Services.AddHttpClient<ICredenciaisTurnService, CloudflareTurnService>(client => client.Timeout = TimeSpan.FromSeconds(5));
 
 builder.Services.AddSignalR();
 
@@ -80,6 +95,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!))
+        };
+
+        // O cliente WebSocket do SignalR não envia o header Authorization; o token
+        // vem via query string (?access_token=...) na conexão com o hub.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/api/chatHub"))
+                    context.Token = accessToken;
+
+                return Task.CompletedTask;
+            }
         };
     });
 
