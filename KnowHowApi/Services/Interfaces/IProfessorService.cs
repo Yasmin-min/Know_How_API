@@ -12,6 +12,7 @@ namespace KnowHowApi.Services.Interfaces
         Task<ProfessorAulaResponseDTO> ObterAula(int professorId, int aulaId);
         Task<ProfessorAulaResponseDTO> AtualizarAula(int professorId, int aulaId, CriarAulaRequestDTO request);
         Task<ProfessorAulaResponseDTO> AlterarStatusAula(int professorId, int aulaId, AlterarStatusAulaRequestDTO request);
+        Task ExcluirAula(int professorId, int aulaId);
         Task<ProfessorPerfilResponseDTO?> ObterPerfil(int usuarioId);
         Task<ProfessorPerfilResponseDTO?> AtualizarPerfil(int usuarioId, ProfessorPerfilRequestDTO request);
     }

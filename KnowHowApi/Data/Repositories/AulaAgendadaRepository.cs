@@ -167,5 +167,13 @@ namespace KnowHowApi.Data.Repositories
                 .Distinct()
                 .CountAsync();
         }
+
+        // Agendamentos não cancelados desta aula do catálogo que ainda não começaram.
+        public async Task<bool> ExisteAulaAgendadaFutura(int aulaId, DateTime agora)
+        {
+            return await _context.AulasAgendadas
+                .AsNoTracking()
+                .AnyAsync(a => a.AulaId == aulaId && a.Status == AulaAgendada.StatusAgendada && a.Inicio > agora);
+        }
     }
 };

@@ -7,7 +7,7 @@ using Moq;
 
 namespace KnowHowApi.Tests.Services
 {
-    // GET /Professor/aulas, GET e PUT /Professor/aulas/{id} e PUT /Professor/aulas/{id}/status.
+    // GET /Professor/aulas, GET, PUT e DELETE /Professor/aulas/{id} e PUT /Professor/aulas/{id}/status.
     public class ProfessorServiceAulasTests
     {
         private const int ProfessorId = 10;
@@ -234,6 +234,53 @@ namespace KnowHowApi.Tests.Services
 
             await Assert.ThrowsAsync<NotFoundException>(() =>
                 _service.AlterarStatusAula(ProfessorId, AulaId, new AlterarStatusAulaRequestDTO { Status = "ativa" }));
+        }
+
+        [Theory]
+        [InlineData("rascunho")]
+        [InlineData("pausada")]
+        public async Task ExcluirAula_RascunhoOuInativa_Exclui(string status)
+        {
+            var aula = AulaCompleta(status);
+            AulaExiste(aula);
+
+            await _service.ExcluirAula(ProfessorId, AulaId);
+
+            _aulaRepositoryMock.Verify(r => r.Excluir(aula), Times.Once);
+        }
+
+        [Fact]
+        public async Task ExcluirAula_DeOutroProfessor_LancaNotFound()
+        {
+            _aulaRepositoryMock.Setup(r => r.GetAulaDoProfessor(AulaId, ProfessorId)).ReturnsAsync((Aula?)null);
+
+            var ex = await Assert.ThrowsAsync<NotFoundException>(() => _service.ExcluirAula(ProfessorId, AulaId));
+
+            Assert.Equal("Aula não encontrada.", ex.Message);
+            _aulaRepositoryMock.Verify(r => r.Excluir(It.IsAny<Aula>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ExcluirAula_Ativa_LancaConflito()
+        {
+            AulaExiste(AulaCompleta("ativa"));
+
+            var ex = await Assert.ThrowsAsync<ConflictException>(() => _service.ExcluirAula(ProfessorId, AulaId));
+
+            Assert.Equal("Inative a aula antes de excluí-la.", ex.Message);
+            _aulaRepositoryMock.Verify(r => r.Excluir(It.IsAny<Aula>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ExcluirAula_ComAgendadaFutura_LancaConflito()
+        {
+            AulaExiste(AulaCompleta("pausada"));
+            _aulaAgendadaRepositoryMock.Setup(r => r.ExisteAulaAgendadaFutura(AulaId, It.IsAny<DateTime>())).ReturnsAsync(true);
+
+            var ex = await Assert.ThrowsAsync<ConflictException>(() => _service.ExcluirAula(ProfessorId, AulaId));
+
+            Assert.Equal("Há aulas agendadas com este conteúdo. Cancele-as antes de excluir.", ex.Message);
+            _aulaRepositoryMock.Verify(r => r.Excluir(It.IsAny<Aula>()), Times.Never);
         }
     }
 }

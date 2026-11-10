@@ -57,6 +57,14 @@ namespace KnowHowApi.Data.Repositories
             return aula;
         }
 
+        // Delete direto no banco: a aula vem de uma consulta AsNoTracking.
+        public async Task Excluir(Aula aula)
+        {
+            await _context.Aulas
+                .Where(a => a.Id == aula.Id)
+                .ExecuteDeleteAsync();
+        }
+
         // Uma única consulta para todos os professores (evita N+1 em GET /Professor/listar).
         public async Task<List<Aula>> ListarAtivasDosProfessores(IEnumerable<int> professorIds)
         {

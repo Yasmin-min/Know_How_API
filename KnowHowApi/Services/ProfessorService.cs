@@ -233,6 +233,21 @@ namespace KnowHowApi.Services
             return MapAulaParaResponse(aula, await ContarAlunosAtendidos(professorId));
         }
 
+        // As aulas agendadas que apontam para esta aula ficam com AulaId nulo (FK SetNull);
+        // por isso a exclusão é bloqueada enquanto houver agendamentos futuros.
+        public async Task ExcluirAula(int professorId, int aulaId)
+        {
+            var aula = await GetAulaDoProfessorOuFalhar(professorId, aulaId);
+
+            if (aula.Status == StatusAtiva)
+                throw new ConflictException("Inative a aula antes de excluí-la.");
+
+            if (await _aulaAgendadaRepository.ExisteAulaAgendadaFutura(aula.Id, DateTime.UtcNow))
+                throw new ConflictException("Há aulas agendadas com este conteúdo. Cancele-as antes de excluir.");
+
+            await _aulaRepository.Excluir(aula);
+        }
+
         private async Task<Aula> GetAulaDoProfessorOuFalhar(int professorId, int aulaId)
         {
             var aula = await _aulaRepository.GetAulaDoProfessor(aulaId, professorId);

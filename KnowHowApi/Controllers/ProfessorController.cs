@@ -134,6 +134,22 @@ public class ProfessorController : Controller
     }
 
     [Authorize(Roles = "Professor")]
+    [HttpDelete]
+    [Route("aulas/{id:int}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(409)]
+    public async Task<IActionResult> ExcluirAula([FromRoute] int id)
+    {
+        var usuarioIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(usuarioIdClaim, out var professorId))
+            return Unauthorized();
+
+        await _professorService.ExcluirAula(professorId, id);
+        return NoContent();
+    }
+
+    [Authorize(Roles = "Professor")]
     [HttpGet]
     [Route("perfil")]
     [ProducesResponseType(typeof(ProfessorPerfilResponseDTO), 200)]

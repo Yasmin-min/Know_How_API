@@ -15,5 +15,6 @@ namespace KnowHowApi.Domain.Interfaces
         Task Atualizar(Guid id, int? aulaId, string titulo, string descricao, DateTime inicio, DateTime fim, int duracaoMinutos);
         Task Cancelar(Guid id, DateTime canceladaEm);
         Task<int> ContarAlunosAtendidos(int professorId, DateTime ate);
+        Task<bool> ExisteAulaAgendadaFutura(int aulaId, DateTime agora);
     }
 };

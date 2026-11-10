@@ -9,6 +9,7 @@ namespace KnowHowApi.Domain.Interfaces
         Task<List<Aula>> ListarDoProfessor(int professorId);
         Task<Aula?> GetAulaDoProfessor(int aulaId, int professorId);
         Task<Aula> AtualizarAula(Aula aula);
+        Task Excluir(Aula aula);
         Task<List<Aula>> ListarAtivasDosProfessores(IEnumerable<int> professorIds);
     }
 };
